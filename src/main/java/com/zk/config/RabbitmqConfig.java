@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
  * Created by zk on 18/7/17.
  */
 @Configuration
-public class rabbitmqConfig {
+public class RabbitmqConfig {
     public static final String DEFAULT_BOOK_QUEUE = "dev.book.register.default.queue";
     public static final String MANUAL_BOOK_QUEUE = "dev.book.register.manual.queue";
 

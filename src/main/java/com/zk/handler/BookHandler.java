@@ -1,11 +1,12 @@
 package com.zk.handler;
 
 import com.rabbitmq.client.Channel;
+import com.zk.config.TopicRabbitmqConfig;
 import com.zk.entity.Book;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
-import com.zk.config.rabbitmqConfig;
+import com.zk.config.RabbitmqConfig;
 
 import java.io.IOException;
 
@@ -26,24 +27,24 @@ public class BookHandler {
      * @param book 监听的内容
      */
 
-    @RabbitListener(queues = {rabbitmqConfig.DEFAULT_BOOK_QUEUE})
-    public void listenerDefaultAck(Book book, Message message, Channel channel){
-        // TODO 如果手动ACK,消息会被监听消费,但是消息在队列中依旧存在,如果 未配置 acknowledge-mode 默认是会在消费完毕后自动ACK掉
-        final long deliveryTag = message.getMessageProperties().getDeliveryTag();
-        try {
-            System.out.println("[listenerAutoAck 监听的消息] - [{}]" + book.toString());
-            channel.basicAck(deliveryTag,false);
-        } catch (IOException e) {
-            try {
-                // TODO 处理失败,重新压入MQ
-                channel.basicRecover();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-    }
+//    @RabbitListener(queues = {RabbitmqConfig.DEFAULT_BOOK_QUEUE})
+//    public void listenerDefaultAck(Book book, Message message, Channel channel){
+//        // TODO 如果手动ACK,消息会被监听消费,但是消息在队列中依旧存在,如果 未配置 acknowledge-mode 默认是会在消费完毕后自动ACK掉
+//        final long deliveryTag = message.getMessageProperties().getDeliveryTag();
+//        try {
+//            System.out.println("[listenerAutoAck 监听的消息] - [{}]" + book.toString());
+//            channel.basicAck(deliveryTag,false);
+//        } catch (IOException e) {
+//            try {
+//                // TODO 处理失败,重新压入MQ
+//                channel.basicRecover();
+//            } catch (IOException e1) {
+//                e1.printStackTrace();
+//            }
+//        }
+//    }
 
-    @RabbitListener(queues = {rabbitmqConfig.MANUAL_BOOK_QUEUE})
+    @RabbitListener(queues = {RabbitmqConfig.MANUAL_BOOK_QUEUE})
     public void listenerManualAck(Book book, Message message, Channel channel){
 
         final long deliveryTag = message.getMessageProperties().getDeliveryTag();
@@ -54,5 +55,40 @@ public class BookHandler {
         } catch (IOException e) {
             // TODO 如果报错了,那么我们可以进行容错处理,比如转移当前消息进入其它队列
         }
+    }
+
+
+    /**
+     * 测试demo2的消息接收者1
+     */
+    @RabbitListener(queues = {RabbitmqConfig.DEFAULT_BOOK_QUEUE})
+    public void processReceiver(Book book, Message message, Channel channel){
+        System.out.println("Receiver1:" + book.toString() + "   "+message.toString() + "   " + channel.toString());
+    }
+
+    /**
+     * 测试demo2的消息接收者2
+     */
+    @RabbitListener(queues = {RabbitmqConfig.DEFAULT_BOOK_QUEUE})
+    public void processReceiver2(Book book, Message message, Channel channel){
+        System.out.println("Receiver2:" + book.toString() + "   "+message.toString() + "   " + channel.toString());
+    }
+
+    /**
+     * 测试接收topicExchange自定义模式匹配的消息
+     * @param context
+     */
+    @RabbitListener(queues = {TopicRabbitmqConfig.topicMessage})
+    public void topicExchangeReceiver1(String context){
+        System.out.println("Receiver1:" + context);
+    }
+
+    /**
+     * 测试接收topicExchange自定义模式匹配的消息
+     * @param context
+     */
+    @RabbitListener(queues = {TopicRabbitmqConfig.topicMessages})
+    public void topicExchangeReceiver2(String context){
+        System.out.println("Receiver2:" + context);
     }
 }
